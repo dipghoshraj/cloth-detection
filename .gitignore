@@ -17,3 +17,5 @@
 
 cloth.model/
 flower.model/*
+
+*.zip
