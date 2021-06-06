@@ -42,26 +42,34 @@ class JPEG:
                 break        
 
 
-bads = []
-
-dirname = os.path.dirname(__file__)
-data_dir =os.path.join(dirname, 'dataset/blouses')
-
-onlyfiles = [f for f in listdir(data_dir) if isfile(join(data_dir, f))]
-
-for img in onlyfiles:
-    image = os.path.join('dataset/blouses', img)
-    image = JPEG(image) 
-    try:
-        image.decode()   
-    except:
-        bads.append(os.path.join('dataset/blouses', img))
 
 
-print(bads)
+def get_bads(name):
+    bads = []
+    dirname = os.path.dirname(__file__)
+    dir_n = 'small_dataset/' + name
+    data_dir =os.path.join(dirname, dir_n)
 
-for source in bads:
-    os.remove(source)
+    onlyfiles = [f for f in listdir(data_dir) if isfile(join(data_dir, f))]
+
+    for img in onlyfiles:
+        image = os.path.join(dir_n, img)
+        image = JPEG(image) 
+        try:
+            image.decode()   
+        except:
+            bads.append(os.path.join(dir_n, img))
+    return bads
+
+
+classes =  ["blouses",   "jackets",  "jumpsuit",  "pallazo",  "skirts",    "sweaters",  "tshirt", "dupattas",  "jeans",    "kurti",     "saree",    "sunglass",  "trousers"]
+
+
+for class_name in classes:
+    print(class_name)
+    bads = get_bads(class_name)
+    print(bads)
+    for source in bads:
+        os.remove(source)
 #   os.remove(osp.join(root_img,name))
 
-# ['blouses', 'dupattas', 'jackets', 'jeans', 'jumpsuits', 'kurti', 'palazzos', 'saree', 'skirts', 'sunglass', 'sweaters', 't-shirt', 'trousers']

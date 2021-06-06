@@ -145,7 +145,7 @@ def build(depth,height, width, classes):
 
     model.add(Flatten())
     model.add(Dense(1024))
-    model.add(Activation("sigmoid"))
+    model.add(Activation("softmax"))
     model.add(BatchNormalization())
     model.add(Dropout(0.5))
 

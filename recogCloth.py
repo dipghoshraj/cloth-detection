@@ -14,10 +14,10 @@ batch_size = 32
 img_height = 180
 img_width = 180
 
-img_path= 'img_6.jpeg'
+img_path= 'img_9.jpg'
 
 # classes = ['daisy', 'dandelion', 'roses', 'sunflowers', 'tulips']
-classes = ['kurti', 'sunglass']
+classes = ['blouses', 'dupattas', 'jackets', 'jeans', 'jumpsuits', 'kurti', 'palazzos', 'saree', 'skirts', 'sunglass', 'sweaters', 't-shirt', 'trousers']
 
 img = keras.preprocessing.image.load_img(
     img_path, target_size=(img_height, img_width)
@@ -34,8 +34,14 @@ print(score)
 
 # get label with max accuracy
 idx = np.argmax(score)
-label = classes[idx]
+top_values= [i for i in np.argsort(score)[-4:]]
 
-label = "{}: {:.2f}%".format(label, score[idx] * 100)
+# label = classes[idx]
 
-print(label)
+multilables = [classes[indx] for indx in top_values]
+
+print(multilables)
+
+# label = "{}: {:.2f}%".format(label, score[idx] * 100)
+
+# print(label)

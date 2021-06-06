@@ -15,7 +15,7 @@
 **/*.jpg
 *.jpg
 
-cloth.model/
-flower.model/*
+models/cloth.model/
+models/flower.model/*
 
 *.zip
