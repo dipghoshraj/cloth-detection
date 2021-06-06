@@ -16,18 +16,19 @@ from tensorflow.keras import backend as K
 
 # get the dir for the dataset
 dirname = os.path.dirname(__file__)
-data_dir =pathlib.Path(os.path.join(dirname, 'dataset'))
+data_dir =pathlib.Path(os.path.join(dirname, 'small_dataset'))
 
 
 
 
 #defining the batch size and img dimensions
 # initial parameters
-epochs = 50
+epochs = 40
 lr = 1e-3
-batch_size = 32
-img_height = 180
-img_width = 180
+batch_size = 62
+img_height = 96
+img_width = 96
+img_dims = (96, 96,3)
 
 
 #deviding the data set to tarin and validator files
@@ -36,6 +37,7 @@ train_ds = tf.keras.preprocessing.image_dataset_from_directory(
   validation_split=0.2,
   subset="training",
   seed=123,
+  shuffle=True,
   image_size=(img_height, img_width),
   batch_size=batch_size)
 
@@ -43,6 +45,7 @@ val_ds = tf.keras.preprocessing.image_dataset_from_directory(
   data_dir,
   validation_split=0.2,
   subset="validation",
+  shuffle=True,
   seed=123,
   image_size=(img_height, img_width),
   batch_size=batch_size)
@@ -91,29 +94,69 @@ data_augmentation = keras.Sequential(
 )
 
 
-#model configuration
-def build():
-    num_classes = 13
+plt.figure(figsize=(10, 10))
+for images, _ in train_ds.take(1):
+  for i in range(9):
+    augmented_images = data_augmentation(images)
+    ax = plt.subplot(3, 3, i + 1)
+    plt.imshow(augmented_images[0].numpy().astype("uint8"))
+    plt.axis("off")
+plt.show()
 
-    model = Sequential([
-        data_augmentation,
-        layers.experimental.preprocessing.Rescaling(1./255),
-        layers.Conv2D(16, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Conv2D(32, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Conv2D(64, 3, padding='same', activation='relu'),
-        layers.MaxPooling2D(),
-        layers.Dropout(0.2),
-        layers.Flatten(),
-        layers.Dense(128, activation='relu'),
-        layers.Dense(num_classes)
-    ])
+
+#model configuration
+def build(depth,height, width, classes):
+    model = Sequential()
+
+    inputShape = (height, width, depth)
+    chanDim = -1
+
+    if K.image_data_format() == "channels_first": #Returns a string, either 'channels_first' or 'channels_last'
+        inputShape = (depth, height, width)
+        chanDim = 1
+
+    model.add(data_augmentation)
+
+    model.add(Conv2D(32, (3,3), padding="same", input_shape=inputShape))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization(axis=chanDim))
+    model.add(MaxPooling2D(pool_size=(3,3)))
+    model.add(Dropout(0.25))
+
+    model.add(Conv2D(64, (3,3), padding="same"))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization(axis=chanDim))
+
+    model.add(Conv2D(64, (3,3), padding="same"))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization(axis=chanDim))
+    model.add(MaxPooling2D(pool_size=(2,2)))
+    model.add(Dropout(0.25))
+
+    model.add(Conv2D(128, (3,3), padding="same"))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization(axis=chanDim))
+
+    model.add(Conv2D(128, (3,3), padding="same"))
+    model.add(Activation("relu"))
+    model.add(BatchNormalization(axis=chanDim))
+    model.add(MaxPooling2D(pool_size=(2,2)))
+    model.add(Dropout(0.25))
+
+    model.add(Flatten())
+    model.add(Dense(1024))
+    model.add(Activation("sigmoid"))
+    model.add(BatchNormalization())
+    model.add(Dropout(0.5))
+
+    model.add(Dense(classes))
+    model.add(Activation("softmax"))
 
     return model
 
+
 #build the model
-model = build()
+model = build(width=img_dims[0], height=img_dims[1], depth=img_dims[2],classes=13)
 
 
 # opt = Adam(lr=lr, decay=lr/epochs)
@@ -123,7 +166,7 @@ history = model.fit(train_ds, validation_data=val_ds,epochs=epochs)
 
 
 # save the model
-model.save('cloth.model')
+model.save('new_cloth.model')
 
 #plot the training history data
 acc = history.history['accuracy']
