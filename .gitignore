@@ -16,6 +16,10 @@
 *.jpg
 
 models/cloth.model/
+new_cloth.model/*
 models/flower.model/*
 
 *.zip
+*.csv
+*.ipynb
+*.png
